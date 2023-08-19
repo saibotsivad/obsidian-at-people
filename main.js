@@ -21,10 +21,10 @@ module.exports = class AtPeople extends Plugin {
 		this.registerEvent(this.app.vault.on('delete', async event => { await this.update(event) }))
 		this.registerEvent(this.app.vault.on('create', async event => { await this.update(event) }))
 		this.registerEvent(this.app.vault.on('rename', async (event, originalFilepath) => { await this.update(event, originalFilepath) }))
-		this.app.workspace.onLayoutReady(this.initialize)
 		this.addSettingTab(new AtPeopleSettingTab(this.app, this))
 		this.suggestor = new AtPeopleSuggestor(this.app, this.settings)
 		this.registerEditorSuggest(this.suggestor)
+		this.app.workspace.onLayoutReady(this.initialize)
 	}
 
 	async loadSettings() {
@@ -61,7 +61,9 @@ module.exports = class AtPeople extends Plugin {
 			const name = getPersonName(filename, this.settings)
 			if (name) this.peopleFileMap[name] = filename
 		}
-		this.updatePeopleMap()
+		window.setTimeout(() => {
+			this.updatePeopleMap()
+		})
 	}
 }
 
