@@ -76,10 +76,20 @@ class AtPeopleSuggestor extends EditorSuggest {
 		this.peopleFileMap = peopleFileMap
 	}
 	onTrigger(cursor, editor, tFile) {
+		console.log('----editor', editor)
 		let charsLeftOfCursor = editor.getLine(cursor.line).substring(0, cursor.ch)
 		let atIndex = charsLeftOfCursor.lastIndexOf('@')
 		let query = atIndex >= 0 && charsLeftOfCursor.substring(atIndex + 1)
-		if (query && !query.includes(']]')) {
+		if (
+			query
+			&& !query.includes(']]')
+			&& (
+				// if it's an @ at the start of a line
+				atIndex === 0
+				// or if there's a space character before it
+				|| charsLeftOfCursor[atIndex - 1] === ' '
+			)
+		) {
 			return {
 				start: { line: cursor.line, ch: atIndex },
 				end: { line: cursor.line, ch: cursor.ch },
