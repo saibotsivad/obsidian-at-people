@@ -76,7 +76,6 @@ class AtPeopleSuggestor extends EditorSuggest {
 		this.peopleFileMap = peopleFileMap
 	}
 	onTrigger(cursor, editor, tFile) {
-		console.log('----editor', editor)
 		let charsLeftOfCursor = editor.getLine(cursor.line).substring(0, cursor.ch)
 		let atIndex = charsLeftOfCursor.lastIndexOf('@')
 		let query = atIndex >= 0 && charsLeftOfCursor.substring(atIndex + 1)

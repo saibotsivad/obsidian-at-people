@@ -70,6 +70,10 @@ And then the inserted link would look like:
 >
 > I'm open to better implementations that don't add a lot of complexity, just start a discussion.
 
+## Conflicts
+
+Several plugins have conflicts with using the `@` symbol, please look at the [Github issues for plugin conflicts](https://github.com/saibotsivad/obsidian-at-people/issues?q=is%3Aissue+conflict+) to see if yours has been resolved.
+
 ## License
 
 Published and made available freely under the [Very Open License](http://veryopenlicense.com/).
