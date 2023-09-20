@@ -1,4 +1,4 @@
-const { App, Editor, EditorSuggest, TFile, normalizePath, Notice, Plugin, PluginSettingTab, Setting } = require('obsidian')
+const { EditorSuggest, normalizePath, Plugin, PluginSettingTab, Setting } = require('obsidian')
 
 const DEFAULT_SETTINGS = {
 	peopleFolder: 'People/',
