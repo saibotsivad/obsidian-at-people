@@ -1,8 +1,8 @@
 import { EditorSuggest, normalizePath, Plugin, PluginSettingTab, Setting } from 'obsidian'
-import { FileSuggester } from './suggesters'
+import { FileSuggester, FolderSuggester } from './suggesters'
 
 const DEFAULT_SETTINGS = {
-	peopleFolder: 'People/',
+	peopleFolder: 'People',
 	createFileOnNewPerson: true,
 	// Defaults:
 	// useExplicitLinks: undefined,
@@ -171,16 +171,16 @@ class AtPeopleSettingTab extends PluginSettingTab {
 		containerEl.empty()
 		new Setting(containerEl)
 			.setName('People folder')
-			.setDesc('The folder where people files live, e.g. "People/". (With trailing slash.)')
-			.addText(
-				text => text
-					.setPlaceholder(DEFAULT_SETTINGS.peopleFolder)
-					.setValue(this.plugin.settings.peopleFolder)
-					.onChange(async (value) => {
-						this.plugin.settings.peopleFolder = value
-						await this.plugin.saveSettings()
-					})
-			)
+			.setDesc('The folder where people files live')
+			.addSearch((search) => {
+				new FolderSuggester(this.app, search.inputEl);
+                search
+                    .setValue(this.plugin.settings.peopleFolder)
+                    .onChange((newFolder) => {
+                        this.plugin.settings.peopleFolder = normalizePath(newFolder);
+                        this.plugin.saveSettings();
+                    });
+			})
 		new Setting(containerEl)
 			.setName('Explicit links')
 			.setDesc('When inserting links include the full path, e.g. [[People/@Bob Dole.md|@Bob Dole]]')

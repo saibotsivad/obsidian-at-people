@@ -11,7 +11,7 @@ var __publicField = (obj, key, value) => {
 };
 
 // src/plugin.js
-var import_obsidian3 = require("obsidian");
+var import_obsidian4 = require("obsidian");
 
 // src/suggesters/FileSuggester.js
 var import_obsidian2 = require("obsidian");
@@ -1657,9 +1657,33 @@ var FileSuggester_default = class extends TextInputSuggest {
   }
 };
 
+// src/suggesters/FolderSuggester.js
+var import_obsidian3 = require("obsidian");
+var FolderSuggester_default = class extends TextInputSuggest {
+  getSuggestions(inputStr) {
+    const abstractFiles = this.app.vault.getAllLoadedFiles();
+    const folders = [];
+    const lowerCaseInputStr = inputStr.toLowerCase();
+    abstractFiles.forEach((folder) => {
+      if (folder instanceof import_obsidian3.TFolder && folder.path.toLowerCase().contains(lowerCaseInputStr)) {
+        folders.push(folder);
+      }
+    });
+    return folders;
+  }
+  renderSuggestion(file, el) {
+    el.setText(file.path);
+  }
+  selectSuggestion(file) {
+    this.inputEl.value = file.path;
+    this.inputEl.trigger("input");
+    this.close();
+  }
+};
+
 // src/plugin.js
 var DEFAULT_SETTINGS = {
-  peopleFolder: "People/",
+  peopleFolder: "People",
   createFileOnNewPerson: true
   // Defaults:
   // useExplicitLinks: undefined,
@@ -1686,7 +1710,7 @@ var createPersonFile = async (vault, filePath, templateFilePath) => {
   const content = await getTemplateContent(vault, templateFilePath);
   return createFile(vault, filePath, content);
 };
-module.exports = class AtPeople extends import_obsidian3.Plugin {
+module.exports = class AtPeople extends import_obsidian4.Plugin {
   constructor() {
     super(...arguments);
     __publicField(this, "updatePeopleMap", () => {
@@ -1743,7 +1767,7 @@ module.exports = class AtPeople extends import_obsidian3.Plugin {
     await this.saveData(this.settings || DEFAULT_SETTINGS);
   }
 };
-var AtPeopleSuggestor = class extends import_obsidian3.EditorSuggest {
+var AtPeopleSuggestor = class extends import_obsidian4.EditorSuggest {
   constructor(app, settings) {
     super(app);
     this.settings = settings;
@@ -1799,8 +1823,8 @@ var AtPeopleSuggestor = class extends import_obsidian3.EditorSuggest {
       link = `[[@${value.displayText}]]`;
     }
     if (value.suggestionType === "create" && this.settings.createFileOnNewPerson) {
-      const personFilePath = (0, import_obsidian3.normalizePath)(`${this.settings.peopleFolder}/@${value.displayText}.md`);
-      const templateFilePath = (0, import_obsidian3.normalizePath)(this.settings.templateFile);
+      const personFilePath = (0, import_obsidian4.normalizePath)(`${this.settings.peopleFolder}/@${value.displayText}.md`);
+      const templateFilePath = (0, import_obsidian4.normalizePath)(this.settings.templateFile);
       createPersonFile(this.app.vault, personFilePath, templateFilePath);
     }
     value.context.editor.replaceRange(
@@ -1810,7 +1834,7 @@ var AtPeopleSuggestor = class extends import_obsidian3.EditorSuggest {
     );
   }
 };
-var AtPeopleSettingTab = class extends import_obsidian3.PluginSettingTab {
+var AtPeopleSettingTab = class extends import_obsidian4.PluginSettingTab {
   constructor(app, plugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -1818,34 +1842,35 @@ var AtPeopleSettingTab = class extends import_obsidian3.PluginSettingTab {
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian3.Setting(containerEl).setName("People folder").setDesc('The folder where people files live, e.g. "People/". (With trailing slash.)').addText(
-      (text) => text.setPlaceholder(DEFAULT_SETTINGS.peopleFolder).setValue(this.plugin.settings.peopleFolder).onChange(async (value) => {
-        this.plugin.settings.peopleFolder = value;
-        await this.plugin.saveSettings();
-      })
-    );
-    new import_obsidian3.Setting(containerEl).setName("Explicit links").setDesc("When inserting links include the full path, e.g. [[People/@Bob Dole.md|@Bob Dole]]").addToggle(
+    new import_obsidian4.Setting(containerEl).setName("People folder").setDesc("The folder where people files live").addSearch((search) => {
+      new FolderSuggester_default(this.app, search.inputEl);
+      search.setValue(this.plugin.settings.peopleFolder).onChange((newFolder) => {
+        this.plugin.settings.peopleFolder = (0, import_obsidian4.normalizePath)(newFolder);
+        this.plugin.saveSettings();
+      });
+    });
+    new import_obsidian4.Setting(containerEl).setName("Explicit links").setDesc("When inserting links include the full path, e.g. [[People/@Bob Dole.md|@Bob Dole]]").addToggle(
       (toggle) => toggle.onChange(async (value) => {
         this.plugin.settings.useExplicitLinks = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian3.Setting(containerEl).setName("Last name folder").setDesc('When using explicit links, use the "last name" (the last non-spaced word) as a sub-folder, e.g. [[People/Dole/@Bob Dole.md|@Bob Dole]]').addToggle(
+    new import_obsidian4.Setting(containerEl).setName("Last name folder").setDesc('When using explicit links, use the "last name" (the last non-spaced word) as a sub-folder, e.g. [[People/Dole/@Bob Dole.md|@Bob Dole]]').addToggle(
       (toggle) => toggle.onChange(async (value) => {
         this.plugin.settings.useLastNameFolder = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian3.Setting(containerEl).setName("Create file when adding new person").setDesc("When adding a new person, create the corresponding file in the People folder").addToggle((toggle) => {
+    new import_obsidian4.Setting(containerEl).setName("Create file when adding new person").setDesc("When adding a new person, create the corresponding file in the People folder").addToggle((toggle) => {
       toggle.setValue(this.plugin.settings.createFileOnNewPerson).onChange((value) => {
         this.plugin.settings.createFileOnNewPerson = value;
         this.plugin.saveSettings();
       });
     });
-    new import_obsidian3.Setting(containerEl).setName("Template file location").setDesc("This file will be used as a template for the new person file").addSearch((search) => {
+    new import_obsidian4.Setting(containerEl).setName("Template file location").setDesc("This file will be used as a template for the new person file").addSearch((search) => {
       new FileSuggester_default(this.app, search.inputEl);
       search.setPlaceholder("Ex.: ./Templates").setValue(this.plugin.settings.templateFile).onChange((newFile) => {
-        this.plugin.settings.templateFile = (0, import_obsidian3.normalizePath)(newFile);
+        this.plugin.settings.templateFile = (0, import_obsidian4.normalizePath)(newFile);
         this.plugin.saveSettings();
       });
     });
