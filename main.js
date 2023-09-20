@@ -6,6 +6,7 @@ const DEFAULT_SETTINGS = {
 	// Defaults:
 	// useExplicitLinks: undefined,
 	// useLastNameFolder: undefined,
+	// templateFile: undefined
 }
 
 const NAME_REGEX = /\/@([^\/]+)\.md$/
@@ -16,8 +17,19 @@ const getPersonName = (filename, settings) => filename.startsWith(settings.peopl
 	&& filename.includes('/@')
 	&& NAME_REGEX.exec(filename)?.[1]
 
-const createFile = async (vault, filePath) => {
-	return vault.create(filePath, "")
+const getTemplateContent = async (vault, templateFilePath) => {
+	if (!templateFilePath) { return "" }
+	const templateFile = vault.getAbstractFileByPath(templateFilePath)
+	return vault.cachedRead(templateFile)
+}
+
+const createFile = async (vault, filePath, content) => {
+	return vault.createBinary(filePath, content)
+}
+
+const createPersonFile = async (vault, filePath, templateFilePath) => {
+	const content = await getTemplateContent(vault, templateFilePath)
+	return createFile(vault, filePath, content)
 }
 
 module.exports = class AtPeople extends Plugin {
@@ -136,7 +148,8 @@ class AtPeopleSuggestor extends EditorSuggest {
 
 		if (value.suggestionType === 'create' && this.settings.createFileOnNewPerson) {
 			const personFilePath = normalizePath(`${this.settings.peopleFolder}/@${value.displayText}.md`)
-			createFile(this.app.vault, personFilePath)
+			const templateFilePath = normalizePath(this.settings.templateFile)
+			createPersonFile(this.app.vault, personFilePath, templateFilePath)
 		}
 
 		value.context.editor.replaceRange(
@@ -185,7 +198,7 @@ class AtPeopleSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings()
 				})
 			)
-			new Setting(containerEl)
+		new Setting(containerEl)
 			.setName('Create file when adding new person')
 			.setDesc('When adding a new person, create the corresponding file in the People folder')
 			.addToggle(toggle => {
@@ -196,5 +209,17 @@ class AtPeopleSettingTab extends PluginSettingTab {
 						this.plugin.saveSettings()
 					})
 			})
+		new Setting(containerEl)
+			.setName('Template file location')
+			.setDesc('This file will be used as a template for the new person file')
+			.addText(
+				text => text
+					.setPlaceholder("Ex.: ./Templates/people.md")
+					.setValue(this.plugin.settings.templateFile)
+					.onChange(async (value) => {
+						this.plugin.settings.templateFile = value
+						await this.plugin.saveSettings()
+					})
+			)
 	}
 }
