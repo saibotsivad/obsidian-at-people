@@ -1,7 +1,8 @@
-const { App, Editor, EditorSuggest, TFile, Notice, Plugin, PluginSettingTab, Setting } = require('obsidian')
+const { App, Editor, EditorSuggest, TFile, normalizePath, Notice, Plugin, PluginSettingTab, Setting } = require('obsidian')
 
 const DEFAULT_SETTINGS = {
 	peopleFolder: 'People/',
+	createFileOnNewPerson: true,
 	// Defaults:
 	// useExplicitLinks: undefined,
 	// useLastNameFolder: undefined,
@@ -14,6 +15,10 @@ const getPersonName = (filename, settings) => filename.startsWith(settings.peopl
 	&& filename.endsWith('.md')
 	&& filename.includes('/@')
 	&& NAME_REGEX.exec(filename)?.[1]
+
+const createFile = async (vault, filePath) => {
+	return vault.create(filePath, "")
+}
 
 module.exports = class AtPeople extends Plugin {
 	async onload() {
@@ -128,6 +133,12 @@ class AtPeopleSuggestor extends EditorSuggest {
 		} else {
 			link = `[[@${value.displayText}]]`
 		}
+
+		if (value.suggestionType === 'create' && this.settings.createFileOnNewPerson) {
+			const personFilePath = normalizePath(`${this.settings.peopleFolder}/@${value.displayText}.md`)
+			createFile(this.app.vault, personFilePath)
+		}
+
 		value.context.editor.replaceRange(
 			link,
 			value.context.start,
@@ -174,5 +185,16 @@ class AtPeopleSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings()
 				})
 			)
+			new Setting(containerEl)
+			.setName('Create file when adding new person')
+			.setDesc('When adding a new person, create the corresponding file in the People folder')
+			.addToggle(toggle => {
+				toggle
+					.setValue(this.plugin.settings.createFileOnNewPerson)
+					.onChange((value) => {
+						this.plugin.settings.createFileOnNewPerson = value
+						this.plugin.saveSettings()
+					})
+			})
 	}
 }
