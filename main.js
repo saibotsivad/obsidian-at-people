@@ -1869,7 +1869,7 @@ var AtPeopleSettingTab = class extends import_obsidian4.PluginSettingTab {
     });
     new import_obsidian4.Setting(containerEl).setName("Template file location").setDesc("This file will be used as a template for the new person file").addSearch((search) => {
       new FileSuggester_default(this.app, search.inputEl);
-      search.setPlaceholder("Ex.: ./Templates").setValue(this.plugin.settings.templateFile).onChange((newFile) => {
+      search.setValue(this.plugin.settings.templateFile).onChange((newFile) => {
         this.plugin.settings.templateFile = (0, import_obsidian4.normalizePath)(newFile);
         this.plugin.saveSettings();
       });

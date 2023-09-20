@@ -215,7 +215,7 @@ class AtPeopleSettingTab extends PluginSettingTab {
 			.setDesc('This file will be used as a template for the new person file')
 			.addSearch((search) => {
 				new FileSuggester(this.app, search.inputEl);
-                search.setPlaceholder("Ex.: ./Templates")
+                search
 					.setValue(this.plugin.settings.templateFile)
 					.onChange((newFile) => {
 						this.plugin.settings.templateFile = normalizePath(newFile);
