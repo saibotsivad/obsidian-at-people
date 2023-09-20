@@ -1,8 +1,12 @@
 {
   "name": "obsidian-at-people",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Use the @ to create links to people files.",
   "main": "main.js",
+  "scripts": {
+    "dev": "node esbuild.config.mjs",
+    "build": "node esbuild.config.mjs production"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/saibotsivad/obsidian-at-people.git"
@@ -21,5 +25,13 @@
   "bugs": {
     "url": "https://github.com/saibotsivad/obsidian-at-people/issues"
   },
-  "homepage": "https://github.com/saibotsivad/obsidian-at-people#readme"
+  "homepage": "https://github.com/saibotsivad/obsidian-at-people#readme",
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "esbuild": "^0.19.3",
+    "builtin-modules": "^3.3.0"
+  },
+  "devdependencies": {
+    "obsidian": "^1.4.11"
+  }
 }
