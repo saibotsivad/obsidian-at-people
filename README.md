@@ -12,6 +12,23 @@ The author was [[@Rich Hickey]]
 
 and leave the cursor at the end.
 
+## Development
+
+### Install dependencies
+```
+npm install
+```
+
+### Build plugin
+
+To build the plugin run:
+```
+npm run build
+```
+
+Restart obsidian to load the changes.
+
+
 ## Options
 
 There's not a lot to configure here, but they are important:
