@@ -1,5 +1,6 @@
 import { EditorSuggest, normalizePath, Plugin, PluginSettingTab, Setting } from 'obsidian'
 import { FileSuggester, FolderSuggester } from './suggesters'
+import { createFileFromTemplate } from './template'
 
 const DEFAULT_SETTINGS = {
 	peopleFolder: 'People',
@@ -18,19 +19,8 @@ const getPersonName = (filename, settings) => filename.startsWith(settings.peopl
 	&& filename.includes('/@')
 	&& NAME_REGEX.exec(filename)?.[1]
 
-const getTemplateContent = async (vault, templateFilePath) => {
-	if (!templateFilePath) { return "" }
-	const templateFile = vault.getAbstractFileByPath(templateFilePath)
-	return vault.cachedRead(templateFile)
-}
-
-const createFile = async (vault, filePath, content) => {
-	return vault.createBinary(filePath, content)
-}
-
-const createPersonFile = async (vault, filePath, templateFilePath) => {
-	const content = await getTemplateContent(vault, templateFilePath)
-	return createFile(vault, filePath, content)
+const createPersonFile = async (app, templateFilePath, personFilePath) => {
+	await createFileFromTemplate(app, templateFilePath, personFilePath)
 }
 
 module.exports = class AtPeople extends Plugin {
@@ -150,7 +140,7 @@ class AtPeopleSuggestor extends EditorSuggest {
 		if (value.suggestionType === 'create' && this.settings.createFileOnNewPerson) {
 			const personFilePath = normalizePath(`${this.settings.peopleFolder}/@${value.displayText}.md`)
 			const templateFilePath = normalizePath(this.settings.templateFile)
-			createPersonFile(this.app.vault, personFilePath, templateFilePath)
+			createPersonFile(this.app, templateFilePath, personFilePath)
 		}
 
 		value.context.editor.replaceRange(
@@ -212,7 +202,7 @@ class AtPeopleSettingTab extends PluginSettingTab {
 			})
 		new Setting(containerEl)
 			.setName('Template file location')
-			.setDesc('This file will be used as a template for the new person file')
+			.setDesc('This file will be used as a Templates template for the new person file (using settings from the core Templates plugin')
 			.addSearch((search) => {
 				new FileSuggester(this.app, search.inputEl);
                 search

@@ -70,6 +70,17 @@ And then the inserted link would look like:
 >
 > I'm open to better implementations that don't add a lot of complexity, just start a discussion.
 
+### 4. Create a new file on creating a new person
+
+By default, the plugin will not insert a new file when creating a new person. By toggling this a new file will be created.
+
+
+### 5. Template file
+
+Use a templater template file for each newly created @person file.
+
+
+
 ## Conflicts
 
 Several plugins have conflicts with using the `@` symbol, please look at the [Github issues for plugin conflicts](https://github.com/saibotsivad/obsidian-at-people/issues?q=is%3Aissue+conflict+) to see if yours has been resolved.

@@ -1681,6 +1681,26 @@ var FolderSuggester_default = class extends TextInputSuggest {
   }
 };
 
+// src/template.js
+var createFileFromTemplate = async (app, templatePath, filePath) => {
+  const templateFile = app.vault.getAbstractFileByPath(templatePath);
+  const templateContent = await app.vault.cachedRead(templateFile);
+  const templatesPlugin = app.internalPlugins.plugins.templates;
+  if (!templatesPlugin.enabled) {
+    await app.vault.modify(
+      app.workspace.getActiveFile(),
+      templateContent
+    );
+    return;
+  }
+  const newFile = await app.vault.createBinary(filePath, "");
+  const newLeaf = app.workspace.getLeaf("tab");
+  await newLeaf.openFile(newFile, { active: false });
+  app.workspace.setActiveLeaf(newLeaf, false, false);
+  await templatesPlugin.instance.insertTemplate(templateFile);
+  newLeaf.detach();
+};
+
 // src/plugin.js
 var DEFAULT_SETTINGS = {
   peopleFolder: "People",
@@ -1696,19 +1716,8 @@ var getPersonName = (filename, settings) => {
   var _a;
   return filename.startsWith(settings.peopleFolder) && filename.endsWith(".md") && filename.includes("/@") && ((_a = NAME_REGEX.exec(filename)) == null ? void 0 : _a[1]);
 };
-var getTemplateContent = async (vault, templateFilePath) => {
-  if (!templateFilePath) {
-    return "";
-  }
-  const templateFile = vault.getAbstractFileByPath(templateFilePath);
-  return vault.cachedRead(templateFile);
-};
-var createFile = async (vault, filePath, content) => {
-  return vault.createBinary(filePath, content);
-};
-var createPersonFile = async (vault, filePath, templateFilePath) => {
-  const content = await getTemplateContent(vault, templateFilePath);
-  return createFile(vault, filePath, content);
+var createPersonFile = async (app, templateFilePath, personFilePath) => {
+  await createFileFromTemplate(app, templateFilePath, personFilePath);
 };
 module.exports = class AtPeople extends import_obsidian4.Plugin {
   constructor() {
@@ -1825,7 +1834,7 @@ var AtPeopleSuggestor = class extends import_obsidian4.EditorSuggest {
     if (value.suggestionType === "create" && this.settings.createFileOnNewPerson) {
       const personFilePath = (0, import_obsidian4.normalizePath)(`${this.settings.peopleFolder}/@${value.displayText}.md`);
       const templateFilePath = (0, import_obsidian4.normalizePath)(this.settings.templateFile);
-      createPersonFile(this.app.vault, personFilePath, templateFilePath);
+      createPersonFile(this.app, templateFilePath, personFilePath);
     }
     value.context.editor.replaceRange(
       link,
@@ -1867,7 +1876,7 @@ var AtPeopleSettingTab = class extends import_obsidian4.PluginSettingTab {
         this.plugin.saveSettings();
       });
     });
-    new import_obsidian4.Setting(containerEl).setName("Template file location").setDesc("This file will be used as a template for the new person file").addSearch((search) => {
+    new import_obsidian4.Setting(containerEl).setName("Template file location").setDesc("This file will be used as a Templates template for the new person file (using settings from the core Templates plugin").addSearch((search) => {
       new FileSuggester_default(this.app, search.inputEl);
       search.setValue(this.plugin.settings.templateFile).onChange((newFile) => {
         this.plugin.settings.templateFile = (0, import_obsidian4.normalizePath)(newFile);
