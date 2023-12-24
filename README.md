@@ -12,6 +12,23 @@ The author was [[@Rich Hickey]]
 
 and leave the cursor at the end.
 
+## Development
+
+### Install dependencies
+```
+npm install
+```
+
+### Build plugin
+
+To build the plugin run:
+```
+npm run build
+```
+
+Restart obsidian to load the changes.
+
+
 ## Options
 
 There's not a lot to configure here, but they are important:
@@ -69,6 +86,17 @@ And then the inserted link would look like:
 > Note: figuring out what the "last name" is (or if it even has one) is really complicated! This plugin takes a very simply approach: if you split a name by the space character, it'll just pick the last "word". So for example "Charles Le Fabre" would be "Fabre" and *not* "Le Fabre".
 >
 > I'm open to better implementations that don't add a lot of complexity, just start a discussion.
+
+### 4. Create a new file on creating a new person
+
+By default, the plugin will not insert a new file when creating a new person. By toggling this a new file will be created.
+
+
+### 5. Template file
+
+Use a templater template file for each newly created @person file.
+
+
 
 ## Conflicts
 
