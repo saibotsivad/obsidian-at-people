@@ -11,7 +11,7 @@ var __publicField = (obj, key, value) => {
 };
 
 // src/plugin.js
-var import_obsidian4 = require("obsidian");
+var import_obsidian5 = require("obsidian");
 
 // src/suggesters/FileSuggester.js
 var import_obsidian2 = require("obsidian");
@@ -1563,14 +1563,14 @@ var Suggest = class {
   }
 };
 var TextInputSuggest = class {
-  constructor(app, inputEl) {
+  constructor(app2, inputEl) {
     __publicField(this, "app");
     __publicField(this, "inputEl");
     __publicField(this, "popper");
     __publicField(this, "scope");
     __publicField(this, "suggestEl");
     __publicField(this, "suggest");
-    this.app = app;
+    this.app = app2;
     this.inputEl = inputEl;
     this.scope = new import_obsidian.Scope();
     this.suggestEl = createDiv("suggestion-container");
@@ -1682,24 +1682,27 @@ var FolderSuggester_default = class extends TextInputSuggest {
 };
 
 // src/template.js
-var createFileFromTemplate = async (app, templatePath, filePath) => {
-  const templateFile = app.vault.getAbstractFileByPath(templatePath);
-  const templateContent = await app.vault.cachedRead(templateFile);
-  const templatesPlugin = app.internalPlugins.plugins.templates;
+var createFileFromTemplate = async (app2, templatePath, filePath) => {
+  const templateFile = app2.vault.getAbstractFileByPath(templatePath);
+  const templateContent = await app2.vault.cachedRead(templateFile);
+  const templatesPlugin = app2.internalPlugins.plugins.templates;
   if (!templatesPlugin.enabled) {
-    await app.vault.modify(
-      app.workspace.getActiveFile(),
-      templateContent
-    );
+    await app2.vault.createBinary(filePath, templateContent);
     return;
   }
-  const newFile = await app.vault.createBinary(filePath, "");
-  const newLeaf = app.workspace.getLeaf("tab");
+  console.log(templatesPlugin);
+  console.log(templatesPlugin.templates);
+  const newFile = await app2.vault.createBinary(filePath, "");
+  const newLeaf = app2.workspace.getLeaf("tab");
   await newLeaf.openFile(newFile, { active: false });
-  app.workspace.setActiveLeaf(newLeaf, false, false);
+  app2.workspace.setActiveLeaf(newLeaf, false, false);
   await templatesPlugin.instance.insertTemplate(templateFile);
   newLeaf.detach();
 };
+
+// src/helper.js
+var import_obsidian4 = require("obsidian");
+var isFile = (path) => app.vault.getAbstractFileByPath(path) instanceof import_obsidian4.TFile;
 
 // src/plugin.js
 var DEFAULT_SETTINGS = {
@@ -1716,10 +1719,13 @@ var getPersonName = (filename, settings) => {
   var _a;
   return filename.startsWith(settings.peopleFolder) && filename.endsWith(".md") && filename.includes("/@") && ((_a = NAME_REGEX.exec(filename)) == null ? void 0 : _a[1]);
 };
-var createPersonFile = async (app, templateFilePath, personFilePath) => {
-  await createFileFromTemplate(app, templateFilePath, personFilePath);
+var createPersonFile = async (app2, templateFilePath, personFilePath) => {
+  if (templateFilePath) {
+    return createFileFromTemplate(app2, templateFilePath, personFilePath);
+  }
+  return app2.vault.createBinary(personFilePath, "");
 };
-module.exports = class AtPeople extends import_obsidian4.Plugin {
+module.exports = class AtPeople extends import_obsidian5.Plugin {
   constructor() {
     super(...arguments);
     __publicField(this, "updatePeopleMap", () => {
@@ -1776,9 +1782,9 @@ module.exports = class AtPeople extends import_obsidian4.Plugin {
     await this.saveData(this.settings || DEFAULT_SETTINGS);
   }
 };
-var AtPeopleSuggestor = class extends import_obsidian4.EditorSuggest {
-  constructor(app, settings) {
-    super(app);
+var AtPeopleSuggestor = class extends import_obsidian5.EditorSuggest {
+  constructor(app2, settings) {
+    super(app2);
     this.settings = settings;
   }
   updatePeopleMap(peopleFileMap) {
@@ -1832,9 +1838,8 @@ var AtPeopleSuggestor = class extends import_obsidian4.EditorSuggest {
       link = `[[@${value.displayText}]]`;
     }
     if (value.suggestionType === "create" && this.settings.createFileOnNewPerson) {
-      const personFilePath = (0, import_obsidian4.normalizePath)(`${this.settings.peopleFolder}/@${value.displayText}.md`);
-      const templateFilePath = (0, import_obsidian4.normalizePath)(this.settings.templateFile);
-      createPersonFile(this.app, templateFilePath, personFilePath);
+      const personFilePath = (0, import_obsidian5.normalizePath)(`${this.settings.peopleFolder}/@${value.displayText}.md`);
+      createPersonFile(this.app, this.settings.templateFile, personFilePath);
     }
     value.context.editor.replaceRange(
       link,
@@ -1843,43 +1848,44 @@ var AtPeopleSuggestor = class extends import_obsidian4.EditorSuggest {
     );
   }
 };
-var AtPeopleSettingTab = class extends import_obsidian4.PluginSettingTab {
-  constructor(app, plugin) {
-    super(app, plugin);
+var AtPeopleSettingTab = class extends import_obsidian5.PluginSettingTab {
+  constructor(app2, plugin) {
+    super(app2, plugin);
     this.plugin = plugin;
   }
   display() {
     const { containerEl } = this;
     containerEl.empty();
-    new import_obsidian4.Setting(containerEl).setName("People folder").setDesc("The folder where people files live").addSearch((search) => {
+    new import_obsidian5.Setting(containerEl).setName("People folder").setDesc("The folder where people files live").addSearch((search) => {
       new FolderSuggester_default(this.app, search.inputEl);
       search.setValue(this.plugin.settings.peopleFolder).onChange((newFolder) => {
-        this.plugin.settings.peopleFolder = (0, import_obsidian4.normalizePath)(newFolder);
+        this.plugin.settings.peopleFolder = (0, import_obsidian5.normalizePath)(newFolder);
         this.plugin.saveSettings();
       });
     });
-    new import_obsidian4.Setting(containerEl).setName("Explicit links").setDesc("When inserting links include the full path, e.g. [[People/@Bob Dole.md|@Bob Dole]]").addToggle(
+    new import_obsidian5.Setting(containerEl).setName("Explicit links").setDesc("When inserting links include the full path, e.g. [[People/@Bob Dole.md|@Bob Dole]]").addToggle(
       (toggle) => toggle.onChange(async (value) => {
         this.plugin.settings.useExplicitLinks = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian4.Setting(containerEl).setName("Last name folder").setDesc('When using explicit links, use the "last name" (the last non-spaced word) as a sub-folder, e.g. [[People/Dole/@Bob Dole.md|@Bob Dole]]').addToggle(
+    new import_obsidian5.Setting(containerEl).setName("Last name folder").setDesc('When using explicit links, use the "last name" (the last non-spaced word) as a sub-folder, e.g. [[People/Dole/@Bob Dole.md|@Bob Dole]]').addToggle(
       (toggle) => toggle.onChange(async (value) => {
         this.plugin.settings.useLastNameFolder = value;
         await this.plugin.saveSettings();
       })
     );
-    new import_obsidian4.Setting(containerEl).setName("Create file when adding new person").setDesc("When adding a new person, create the corresponding file in the People folder").addToggle((toggle) => {
+    new import_obsidian5.Setting(containerEl).setName("Create file when adding new person").setDesc("When adding a new person, create the corresponding file in the People folder").addToggle((toggle) => {
       toggle.setValue(this.plugin.settings.createFileOnNewPerson).onChange((value) => {
         this.plugin.settings.createFileOnNewPerson = value;
         this.plugin.saveSettings();
       });
     });
-    new import_obsidian4.Setting(containerEl).setName("Template file location").setDesc("This file will be used as a Templates template for the new person file (using settings from the core Templates plugin").addSearch((search) => {
+    new import_obsidian5.Setting(containerEl).setName("Template file location").setDesc("This file will be used as a Templates template for the new person file (using settings from the core Templates plugin").addSearch((search) => {
       new FileSuggester_default(this.app, search.inputEl);
-      search.setValue(this.plugin.settings.templateFile).onChange((newFile) => {
-        this.plugin.settings.templateFile = (0, import_obsidian4.normalizePath)(newFile);
+      search.setValue(this.plugin.settings.templateFile).onChange(async (newFile) => {
+        const newPath = (0, import_obsidian5.normalizePath)(newFile);
+        this.plugin.settings.templateFile = isFile(newPath) ? newPath : void 0;
         this.plugin.saveSettings();
       });
     });

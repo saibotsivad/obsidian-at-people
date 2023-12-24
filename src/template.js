@@ -5,13 +5,10 @@ export const createFileFromTemplate = async(app, templatePath, filePath) => {
     const templatesPlugin = app.internalPlugins.plugins.templates;
 
     if (!templatesPlugin.enabled) { 
-        await app.vault.modify(
-            app.workspace.getActiveFile(),
-            templateContent
-        );
+        await app.vault.createBinary(filePath, templateContent)
         return
     }
-
+    
     const newFile = await app.vault.createBinary(filePath, "")
     const newLeaf = app.workspace.getLeaf('tab');
     await newLeaf.openFile(newFile, {active: false});

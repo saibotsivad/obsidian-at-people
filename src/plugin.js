@@ -1,6 +1,7 @@
 import { EditorSuggest, normalizePath, Plugin, PluginSettingTab, Setting } from 'obsidian'
 import { FileSuggester, FolderSuggester } from './suggesters'
 import { createFileFromTemplate } from './template'
+import { isFile } from './helper'
 
 const DEFAULT_SETTINGS = {
 	peopleFolder: 'People',
@@ -20,7 +21,10 @@ const getPersonName = (filename, settings) => filename.startsWith(settings.peopl
 	&& NAME_REGEX.exec(filename)?.[1]
 
 const createPersonFile = async (app, templateFilePath, personFilePath) => {
-	await createFileFromTemplate(app, templateFilePath, personFilePath)
+	if (templateFilePath) {
+		return createFileFromTemplate(app, templateFilePath, personFilePath)
+	}
+	return app.vault.createBinary(personFilePath, "")
 }
 
 module.exports = class AtPeople extends Plugin {
@@ -139,8 +143,7 @@ class AtPeopleSuggestor extends EditorSuggest {
 
 		if (value.suggestionType === 'create' && this.settings.createFileOnNewPerson) {
 			const personFilePath = normalizePath(`${this.settings.peopleFolder}/@${value.displayText}.md`)
-			const templateFilePath = normalizePath(this.settings.templateFile)
-			createPersonFile(this.app, templateFilePath, personFilePath)
+			createPersonFile(this.app, this.settings.templateFile, personFilePath)
 		}
 
 		value.context.editor.replaceRange(
@@ -207,8 +210,9 @@ class AtPeopleSettingTab extends PluginSettingTab {
 				new FileSuggester(this.app, search.inputEl);
                 search
 					.setValue(this.plugin.settings.templateFile)
-					.onChange((newFile) => {
-						this.plugin.settings.templateFile = normalizePath(newFile);
+					.onChange(async (newFile) => {
+						const newPath = normalizePath(newFile)
+						this.plugin.settings.templateFile = isFile(newPath) ? newPath : undefined;
 						this.plugin.saveSettings();
 					});
 			})
