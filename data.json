@@ -1,5 +1,0 @@
-{
-  "peopleFolder": "People",
-  "createFileOnNewPerson": true,
-  "templateFile": "_resources/templates/people.md"
-}
