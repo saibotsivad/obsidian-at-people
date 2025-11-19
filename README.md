@@ -1,5 +1,10 @@
 # Obsidian `@People`
 
+> [!WARNING]
+> This plugin and repository are archived, as I don't have availability to keep up, and I also ended up not using this approach for technical reasons.
+> 
+> If you're interested in a fork that hopes to be more maintained, look over at [backmind/obsidian-at-people](https://github.com/backmind/obsidian-at-people). As of this update, that repo is already [9 solid looking commits](https://github.com/saibotsivad/obsidian-at-people/compare/main...backmind:obsidian-at-people:main) ahead of this one!
+
 Obsidian plugin to add that familiar @-to-tag-someone syntax:
 
 ![](./example.png)
